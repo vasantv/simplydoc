@@ -204,7 +204,7 @@ function findCount($geoPoint, $tableName)
 		`doc_add_long` >= $minLong AND `doc_add_long` <= $maxLong) AS firstQuery";
 		
 	$totalQuery1 = "SELECT COUNT(*) FROM $firstQuery WHERE Distance < $boundingRadius";
-	$result = mysqli_query($totalQuery1,$con);
+	$result = $con->query($totalQuery1);
 	$row = mysqli_fetch_row($result);
 	$counters["first"] = $row[0];
 

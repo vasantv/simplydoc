@@ -18,6 +18,7 @@
 	echo "</select>";	
 	
 ?>
+	<script type="text/javascript" src="http://twitter.github.com/bootstrap/assets/js/bootstrap-typeahead.js"></script>
 	<script type="text/javascript">
 		$(document).ready(function(){
 			$('#specs_list').select2({
