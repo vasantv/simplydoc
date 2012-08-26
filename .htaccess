@@ -1,0 +1,12 @@
+Options +FollowSymLinks
+RewriteEngine on
+
+RewriteRule ^find/doctors/([A-Za-z0-9-\,]+)/?$ http://www.simplydoc.in?location=$1 [NC]
+RewriteRule ^location/([A-Za-z0-9-\,]+)/?$ http://www.simplydoc.in?location=$1 [NC]
+#RewriteRule ^doctor/(.*)-(.*)/?$ http://www.simplydoc.in/testenv/doctorDetails.php?doctor=$1%20$2 [NC]
+RewriteRule ^doctor/([A-Za-z0-9-\,\&]+)/?$ http://www.simplydoc.in/doctorDetails.php?doctor=$1 [NC]
+
+<FilesMatch "(?i)^.*\.(ico|flv|jpg|jpeg|png|gif|js|css)$">
+ExpiresActive On
+ExpiresDefault A86400
+</FilesMatch>
