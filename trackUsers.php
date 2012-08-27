@@ -30,6 +30,8 @@ function traceVisits()
 		}
 }
 
+traceVisits();
+
 function getIP()
 {
     if (!empty($_SERVER['HTTP_CLIENT_IP']))   //check ip from share internet

@@ -11,7 +11,7 @@
 		"long" => $long
 		);
 		
-	$results = findCount($geoPoint,"docTable");
+	$results = findCount($geoPoint,"docDetails");
 	
 	if($results == -1) { echo -1; }
 	else if ($results == NULL) { echo 0; }

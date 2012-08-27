@@ -43,14 +43,17 @@ function findNearby($geoPoint, $boundingRadius, $numItems = 10, $offsetItems = 0
 	$long = $geoPoint["long"];
 	$radLat = deg2rad($lat);
 	$radLong = deg2rad($long);
-	
+
 	$earthR = 6371; //Earth's radius in kms
-	
+
+
 	//first-cut bounding box construction (in degrees)
-	$maxLat = $lat + rad2deg($boundingRadius/$earthR);
-	$minLat = $lat - rad2deg($boundingRadius/$earthR);
-	$maxLong = $long + rad2deg($boundingRadius/$earthR/cos(deg2rad($lat)));
-	$minLong = $long - rad2deg($boundingRadius/$earthR/cos(deg2rad($lat)));
+	$boundDegLat = rad2deg($boundingRadius/$earthR);
+	$boundDegLong = rad2deg($boundingRadius/$earthR/cos(deg2rad($lat)));
+	$maxLat = $lat + $boundDegLat;
+	$minLat = $lat - $boundDegLat;
+	$maxLong = $long + $boundDegLong;
+	$minLong = $long - $boundDegLong;
 	
 	//connect to database
     $con = dbConnect();
@@ -103,44 +106,52 @@ function findNearby($geoPoint, $boundingRadius, $numItems = 10, $offsetItems = 0
 			geoPoint ( "lat", "long" ) specified as degrees in decimals
 	Returns: array of geoDataPoints (Name, Address, Phone, geoPoint, Distance), sorted by distance from input geoPoint; -1 otherwise
 */
-function findNearbyDouble($geoPoint, $boundingRadius1, $boundingRadius2, $numItems = 10, $offsetItems = 0, $tableName)
+function findNearbyDouble($geoPoint, $boundingRadius1, $boundingRadius2, $numItems = 10, $offsetItems = 0, $tableName = "docDetails")
 {
 
 	/* credits for below code: http://www.movable-type.co.uk/scripts/latlong-db.html */
-
+	//error_log("double called with $lat, $long, $boundingRadius1, $boundingRadius2, $numItems, $offsetItems" );
+	$start = microtime();
 	//identifying base elements
 	$lat = $geoPoint["lat"];
 	$long = $geoPoint["long"];
 	$radLat = deg2rad($lat);
 	$radLong = deg2rad($long);
+	//error_log("double called with $lat, $long, $boundingRadius1, $boundingRadius2, $numItems, $offsetItems" );
 	
 	$earthR = 6371; //Earth's radius in kms
 	
 	//first-cut outer bounding box construction (in degrees)
-	$maxLat = $lat + rad2deg($boundingRadius2/$earthR);
-	$minLat = $lat - rad2deg($boundingRadius2/$earthR);
-	$maxLong = $long + rad2deg($boundingRadius2/$earthR/cos(deg2rad($lat)));
-	$minLong = $long - rad2deg($boundingRadius2/$earthR/cos(deg2rad($lat)));
+	$boundDegLat = rad2deg($boundingRadius2/$earthR);
+	$boundDegLong = rad2deg($boundingRadius2/$earthR/cos(deg2rad($lat)));
+	$maxLat = $lat + $boundDegLat;
+	$minLat = $lat - $boundDegLat;
+	$maxLong = $long + $boundDegLong;
+	$minLong = $long - $boundDegLong;
 	
 	//connect to database
     $con = dbConnect();
 	
+	$numItemsInner = ($numItems+$offsetItems) * 2; //heuristic to improve the query timings
     /*construct query and run into database*/
     $firstQuery = "(SELECT *, acos(sin($radLat)*sin(radians(`doc_add_lat`)) + cos($radLat)*cos(radians(`doc_add_lat`))*cos(radians(`doc_add_long`)-$radLong))*$earthR AS Distance 
 		FROM $tableName WHERE 
 		`doc_add_lat` >= $minLat AND `doc_add_lat` <= $maxLat AND
-		`doc_add_long` >= $minLong AND `doc_add_long` <= $maxLong) AS firstQuery";
+		`doc_add_long` >= $minLong AND `doc_add_long` <= $maxLong LIMIT $numItemsInner) AS firstQuery";
 	
 	$totalQuery = "SELECT * FROM $firstQuery WHERE Distance < $boundingRadius2 AND Distance >= $boundingRadius1
 		ORDER BY Distance ASC
 		LIMIT $numItems OFFSET $offsetItems";
 
 	$result = $con->query($totalQuery);
-	
 	if (!$result)
 	{
 		die('Error:  '. $totalQuery . $con->error);
 	}
+
+	$execute_time = microtime() - $start;
+	error_log('time to execute = '.$execute_time);
+
 	mysqli_close($con);
   
   	if(mysqli_num_rows($result)==0) //no matches
@@ -158,7 +169,8 @@ function findNearbyDouble($geoPoint, $boundingRadius1, $boundingRadius2, $numIte
 		 $geoDataPoints[] = array (
 			 "Name" => $row["doc_name"], 
 			 "Address" => $row["doc_address"],
-			 "geoPoint" => array ( 
+			 "Spec" => $row["doc_spec"],
+ 			 "geoPoint" => array ( 
 			 	"lat" => $row["doc_add_lat"],
 				"long" => $row["doc_add_long"] ),
 			 "Distance" => $row["Distance"],
@@ -173,10 +185,12 @@ function findNearbyDouble($geoPoint, $boundingRadius1, $boundingRadius2, $numIte
 			geoPoint ( "lat", "long" ) specified as degrees in decimals
 	Returns: array of resultCounts for ("<1","1-5","5+") distances
 */
-function findCount($geoPoint, $tableName)
+function findCount($geoPoint, $tableName = "docDetails")
 {
 
 	/* credits for below code: http://www.movable-type.co.uk/scripts/latlong-db.html */
+
+	$start = microtime();
 
 	//identifying base elements
 	$lat = $geoPoint["lat"];
@@ -191,55 +205,64 @@ function findCount($geoPoint, $tableName)
 	
 	
 	//first-cut bounding box construction (in degrees) - for inner-most circle
-	$boundingRadius = 1;
-	$maxLat = $lat + rad2deg($boundingRadius/$earthR);
-	$minLat = $lat - rad2deg($boundingRadius/$earthR);
-	$maxLong = $long + rad2deg($boundingRadius/$earthR/cos(deg2rad($lat)));
-	$minLong = $long - rad2deg($boundingRadius/$earthR/cos(deg2rad($lat)));
+	$boundingRadius1 = 1;
+	$boundDegLat = rad2deg($boundingRadius1/$earthR);
+	$boundDegLong = rad2deg($boundingRadius1/$earthR/cos(deg2rad($lat)));
+
+	$maxLat = $lat + $boundDegLat;
+	$minLat = $lat - $boundDegLat;
+	$maxLong = $long + $boundDegLong;
+	$minLong = $long - $boundDegLong;
 
     /*construct query and run into database*/
-    $firstQuery = "(SELECT *, acos(sin($radLat)*sin(radians(`doc_add_lat`)) + cos($radLat)*cos(radians(`doc_add_lat`))*cos(radians(`doc_add_long`)-$radLong))*$earthR AS Distance 
+    $firstQuery = "(SELECT doc_id, acos(sin($radLat)*sin(radians(`doc_add_lat`)) + cos($radLat)*cos(radians(`doc_add_lat`))*cos(radians(`doc_add_long`)-$radLong))*$earthR AS Distance 
 		FROM $tableName WHERE 
 		`doc_add_lat` >= $minLat AND `doc_add_lat` <= $maxLat AND
 		`doc_add_long` >= $minLong AND `doc_add_long` <= $maxLong) AS firstQuery";
 		
-	$totalQuery1 = "SELECT COUNT(*) FROM $firstQuery WHERE Distance < $boundingRadius";
+	$totalQuery1 = "SELECT COUNT(doc_id) FROM $firstQuery WHERE Distance < $boundingRadius1";
+
 	$result = $con->query($totalQuery1);
 	$row = mysqli_fetch_row($result);
 	$counters["first"] = $row[0];
 
 	//first-cut bounding box construction (in degrees) - for second circle	
-	$boundingRadius = 5;
-	$maxLat = $lat + rad2deg($boundingRadius/$earthR);
-	$minLat = $lat - rad2deg($boundingRadius/$earthR);
-	$maxLong = $long + rad2deg($boundingRadius/$earthR/cos(deg2rad($lat)));
-	$minLong = $long - rad2deg($boundingRadius/$earthR/cos(deg2rad($lat)));
+	$boundingRadius2 = 10;
+	$boundDegLat = rad2deg($boundingRadius2/$earthR);
+	$boundDegLong = rad2deg($boundingRadius2/$earthR/cos(deg2rad($lat)));
+
+	$maxLat = $lat + $boundDegLat;
+	$minLat = $lat - $boundDegLat;
+	$maxLong = $long + $boundDegLong;
+	$minLong = $long - $boundDegLong;
 
 	/*construct query and run into database*/
-    $firstQuery = "(SELECT *, acos(sin($radLat)*sin(radians(`doc_add_lat`)) + cos($radLat)*cos(radians(`doc_add_lat`))*cos(radians(`doc_add_long`)-$radLong))*$earthR AS Distance 
+    $firstQuery = "(SELECT doc_id, acos(sin($radLat)*sin(radians(`doc_add_lat`)) + cos($radLat)*cos(radians(`doc_add_lat`))*cos(radians(`doc_add_long`)-$radLong))*$earthR AS Distance 
 		FROM $tableName WHERE 
 		`doc_add_lat` >= $minLat AND `doc_add_lat` <= $maxLat AND
 		`doc_add_long` >= $minLong AND `doc_add_long` <= $maxLong) AS firstQuery";
 				
-	$totalQuery2 = "SELECT COUNT(*) FROM $firstQuery WHERE Distance >= 1 AND Distance < 5";
+	$totalQuery2 = "SELECT COUNT(doc_id) FROM $firstQuery WHERE Distance >= $boundingRadius1 AND Distance < $boundingRadius2";
+
 	$result = $con->query($totalQuery2);
+	error_log('counte query ='.$totalQuery2);
 	$row = mysqli_fetch_row($result);
 	$counters["second"] = $row[0];
 
 	//first-cut bounding box construction (in degrees) - for rest of the circle
-	$boundingRadius = 50;
+/*	$boundingRadius = 50;
 	$maxLat = $lat + rad2deg($boundingRadius/$earthR);
 	$minLat = $lat - rad2deg($boundingRadius/$earthR);
 	$maxLong = $long + rad2deg($boundingRadius/$earthR/cos(deg2rad($lat)));
 	$minLong = $long - rad2deg($boundingRadius/$earthR/cos(deg2rad($lat)));
-	
+*/	
 	/*construct query and run into database*/	
-	$firstQuery = "(SELECT *, acos(sin($radLat)*sin(radians(`doc_add_lat`)) + cos($radLat)*cos(radians(`doc_add_lat`))*cos(radians(`doc_add_long`)-$radLong))*$earthR AS Distance 
+/*	$firstQuery = "(SELECT doc_id, acos(sin($radLat)*sin(radians(`doc_add_lat`)) + cos($radLat)*cos(radians(`doc_add_lat`))*cos(radians(`doc_add_long`)-$radLong))*$earthR AS Distance 
 		FROM $tableName WHERE 
 		`doc_add_lat` >= $minLat AND `doc_add_lat` <= $maxLat AND
 		`doc_add_long` >= $minLong AND `doc_add_long` <= $maxLong) AS firstQuery";
 			
-	$totalQuery3 = "SELECT COUNT(*) FROM $firstQuery WHERE Distance >= 5 AND Distance < 50";
+	$totalQuery3 = "SELECT COUNT(doc_id) FROM $firstQuery WHERE Distance >= 5 AND Distance < 50";
 	$result = $con->query($totalQuery3);
 	$row = mysqli_fetch_row($result);
 	$counters["third"] = $row[0];
@@ -248,8 +271,13 @@ function findCount($geoPoint, $tableName)
 	{
 		die('Error:  ' . mysql_error());
 	}
-	mysql_close($con);
+*/
+	$counters["third"] = 500; //temp	 
+	mysqli_close($con);
   
+	$execute_time = microtime() - $start;
+	error_log('time to execute query-counts = '.$execute_time); 
+
 	return $counters;
 }
 

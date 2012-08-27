@@ -15,7 +15,7 @@
 		"long" => $long
 		);
 		
-	$results = findNearbyDouble($geoPoint,$rad1,$rad2,$num,$offset,"docTable");
+	$results = findNearbyDouble($geoPoint,$rad1,$rad2,$num,$offset);
 	
 	if($results == -1) { echo -1; }
 	else if ($results == NULL) { echo 0; }

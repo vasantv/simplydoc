@@ -45,16 +45,19 @@
 				if($gdPoint['Address'] != "")
 				{
 					  echo 	'<address itemprop="address" itemscope itemtype="http://data-vocabulary.org/Address">
-						'.$gdPoint["Address"].'<br/>';
+						'.$gdPoint["Address"].'</address>';
 				}
-					 echo '</address>
-				</div>';
+				if($gdPoint['Spec'] != "")
+				{
+					  echo 	'<br/><i class="icon-leaf"></i> '.$gdPoint["Spec"];
+				}
+				echo '</div>';
 				$resultCount++;
 			}
 			echo '<div id="resultPages">
 					<ul class="pager">
 					  <li>
-						<a href="" id="nextPage" class="next">Next &rarr;</a>
+						<a href="" id="nextPage" class="next">Next &rsaquo;&rsaquo;</a>
 					  </li>
 					</ul>
 				  </div>';

@@ -62,17 +62,22 @@
 	$("div[id^='result']").removeClass("highResult");  
   }
   
-  function appendResult(id, provName, provAddress, provPhone, provDistance)
+  function appendResult(id, provName, provAddress, provPhone, provDistance, provSpec)
   {
 	  	provDistance = Math.round(provDistance*100)/100;
-		$("#textResults").append('<div itemscope itemtype="http://data-vocabulary.org/Organization" id="result'+id+'" >\
+	  	addString = '<div class="results" itemscope itemtype="http://data-vocabulary.org/Organization" id="result'+id+'" >\
 				  <span>'+id+'.</span>\
 					<span itemprop="name"><strong><a href="http://www.simplydoc.in/doctor/'+provName.replace(/ /g,"-")+'/">'+provName+'</a></strong></span>\
-				    <span itemprop="distance" class="greyText"> ('+provDistance+' kms)</span><br/>\
-				  <address itemprop="address" itemscope itemtype="http://data-vocabulary.org/Address">\
-					'+provAddress+'<br/>\
-				  </address>\
-			</div>');			  
+				    <span itemprop="distance" class="greyText"> ('+provDistance+' kms)</span><br/>';
+		if(provAddress != ''){		  
+				  	addString = addString + '<address itemprop="address" itemscope itemtype="http://data-vocabulary.org/Address">';
+					addString = addString + provAddress+'</address><br/>';
+				}
+	    if(provSpec != '') {
+	    	addString = addString + "<i class='icon-leaf'></i> " +provSpec;
+	    }
+		addString = addString+'</div>';
+		$("#textResults").append(addString);			  
   }
   
   function geoLocError(err)
@@ -125,7 +130,7 @@
 					
 					//adding marker and associated text result
 					addMarker(resultCount, newLatLng);
-					appendResult(resultCount, result.Name, result.Address, result.Phone, result.Distance);
+					appendResult(resultCount, result.Name, result.Address, result.Phone, result.Distance, result.Spec);
 					bounds.extend(newLatLng);
 				});
 				
@@ -142,7 +147,7 @@
 					$("#textResults").append('<div id="resultPages">\
 							<ul class="pager">\
 							  <li >\
-								<a href="" id="nextPage" class="next">Next &rarr;</a>\
+								<a href="" id="nextPage" class="next">Next &rsaquo;&rsaquo;</a>\
 							  </li>\
 							</ul>\
 						  </div>');
@@ -161,10 +166,10 @@
 					$("#textResults").append('<div id="resultPages">\
 							<ul class="pager">\
 							  <li >\
-								<a href="" id="prevPage" class="previous">&larr; Previous</a>\
+								<a href="" id="prevPage" class="previous">&lsaquo;&lsaquo; Previous</a>\
 							  </li>\
 							  <li >\
-								<a href="" id="nextPage" class="next">Next &rarr;</a>\
+								<a href="" id="nextPage" class="next">Next &rsaquo;&rsaquo;</a>\
 							  </li>\
 							</ul>\
 						  </div>');						  					  
@@ -195,7 +200,7 @@
 					$("#textResults").append('<div id="resultPages">\
 							<ul class="pager">\
 							  <li >\
-								<a href="" id="prevPage" class="previous">&larr; Previous</a>\
+								<a href="" id="prevPage" class="previous">&lsaquo;&lsaquo; Previous</a>\
 							  </li>\
 							</ul>\
 						  </div>');
@@ -286,47 +291,6 @@
   }
 	
   $(document).ready(function() {
-	
-	//if 'My Location' button is clicked	
-	$("#myLocation").click(function(){
-
-		//check for navigator geolocation presence
-		if(navigator && navigator.geolocation){
-			navigator.geolocation.getCurrentPosition(function(position){
-				localLatLng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-				
-				$("#resultsHeader").css("visibility","visible");
-				$("#resultsContainer").css("visibility","visible");
-				
-				currentPage = 1;
-
-				displayResult(localLatLng,1);
-				
-				//updateResultCount
-				updateResultCount(localLatLng);
-				
-				//local location is found!
-				localLocation = 1;
-
-				//event tracking
-	  			_gaq.push(['_trackEvent', 'Location', position.coords.latitude, position.coords.longitude]);
-
-			},geoLocError,{timeout:60000});
-		}
-		else
-		{
-			$("#myLocAlert").html('<button class="close" data-dismiss="alert">×</button>&nbsp; Location <strong>can\'t be found</strong>. Please type in address.');
-			$("#myLocAlert").show("fast").delay(2000).hide("slow");
-			
-			localLocation = 0;		
-
-			//event tracking
-	   	    _gaq.push(['_trackEvent', 'searchClick', 'Failed', 'Location not found']);
-
-		}
-		
-		return false;
-	});
 
 	//if text address is provided and search button is clicked
  	$("#searchForm").submit(function(){

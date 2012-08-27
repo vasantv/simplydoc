@@ -2,16 +2,15 @@
 include_once("codes/masterfunctions.php");
 
 //trackuser to check access permissions
-include_once("trackUsers.php");
-traceVisits();
+//include_once("trackUsers.php"); 
 
+$location = $_GET["location"];
 include_once("getDefaultNearBy.php"); 
-
 ?>
 <!DOCTYPE html>
 <head>
-<title>Medly | Find Doctors <?php if(isset($_GET["location"])) {echo "near ".$_GET["location"];} else {echo "Nearby";} ?></title>
-<meta name="description" content="Find doctors and healthcare facilities <?php if(isset($_GET["location"])) {echo "near ".$_GET["location"];} else { echo "nearby";} ?>."/>
+<title>Medly | Find Doctors <?php if(isset($location)) {echo "near ".$location;} else {echo "Nearby";} ?></title>
+<meta name="description" content="Find doctors and healthcare facilities <?php if(isset($location)) {echo "near ".$location;} else { echo "nearby";} ?>."/>
 <meta name="keywords" content="health, healthcare, doctors, doc, hospitals, medical, medly, clinics, physicians, search, find, find a doctor, near, nearby, closest, bangalore, karnataka, mumbai, gurgaon, delhi"/>  
 <meta name="viewport" content="initial-scale=1.0, width=device-width"/>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
@@ -28,9 +27,9 @@ include_once("getDefaultNearBy.php");
     
 <!-- javascripts -->
 <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false"></script>
-<script type="text/javascript" src="http://twitter.github.com/bootstrap/assets/js/bootstrap-typeahead.js"></script>
 <script type="text/javascript" src="codes/StyledMarker.js"></script>
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<script type="text/javascript" src="http://twitter.github.com/bootstrap/assets/js/bootstrap-typeahead.js"></script>
 <script type="text/javascript" src="codes/myCodes.js"></script>
 <script type="text/javascript" src="codes/GA.js"></script>
 <script src="codes/select2.min.js"></script>
@@ -47,7 +46,7 @@ include_once("getDefaultNearBy.php");
 <meta property="og:image" content="" />
 
 </head>
-<body onload="initialize('<?php echo $_GET["location"];?>')">
+<body onload="initialize('<?php //echo $location;?>')">
 <div class="container-fluid">
 <div id="header" class="row-fluid cf">
     <div class="span3">
@@ -73,27 +72,33 @@ include_once("getDefaultNearBy.php");
 </div>
 <div id="content" class="row-fluid cf">
     <div id="resultsHeader" class="span12">
-          <span class="largeText">Found:</span> 
-            <strong><span><a href="" id="res1" class="largeFont">10</a></span></strong> results (&lt;1 km away) |  
-            <strong><span><a href="" id="res2">50</a></span></strong> results (1-5 kms away) |   
-            <strong><span><a href="" id="res3">1000</a></span></strong> results (5-50 kms away) <span class="greyText">out of 2,00,000+ indexed</span>   
-    	   <hr class="blueline"/>
+        <hr id="headerline" class="blueline"/>
+            <div class="largeText">Nearest results:</div> 
+            <strong><span><a href="" id="res1" class="largeFont">10</a></span></strong> Doctors (&lt;1 km away) |  
+            <strong><span><a href="" id="res2">50</a></span></strong> Doctors (1-10 kms away) <span class="greyText">out of 1,97,915 indexed</span>   
+            <ul class="breadcrumb" id="nav_link">
+              <li><a href="index.php">Home</a> <span class="divider">/</span></li>
+              <li><a href="#"><?php echo $location['State']; ?></a> <span class="divider">/</span></li>
+              <li class="active"><a href="#"><?php echo $location['City']; ?></a></li>
+            </ul>
+        <hr class="blueline"/>
     </div>
 	  <div id="resultsContainer" class="span12">
         <div class="row-fluid">
           <div id="mapResults" class="span9">
           	<div id="mapCanvas" style="min-height:500px;height:100%;width:100%;"></div>        
           </div>
-          <div id="textResults" class="span3"><?php defaultPrinter($_GET["location"]); ?></div>
+          <div id="textResults" class="span3"><?php //defaultPrinter($location); ?></div>
         </div>
     </div>    
 </div>
 <div id="footer" class="row-fluid">
     <?php include_once('footer.php'); ?>
 </div>
+<!--
 <div id="floating_footer" class="floating_footer">
-    Muhaha! I am floating.
 </div>
+-->
 </div><!--for the container-->
 </body>
 </html>

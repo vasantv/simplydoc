@@ -1,18 +1,8 @@
 <!-- start facebook code -->
 <div id="fb-root"></div>
-<script>
+<script type="text/javascript">
 window.fbAsyncInit = function() {
 FB.init({appId: '295819117183669', status: true, cookie: true, xfbml: true});
-
-<?php if(isset($docName) && $docName !== "") { ?>
-FB.Event.subscribe('edge.create',
-	function(response){				
-	//analytics tracking
-		_gaq.push(['_trackEvent', 'FB_Like', 'recommend','<?php echo $docName; ?>']);
-
-	});
-};
-<?php } ?>
 
 (function(d, s, id) {
   var js, fjs = d.getElementsByTagName(s)[0];
@@ -21,6 +11,8 @@ FB.Event.subscribe('edge.create',
   js.src = "//connect.facebook.net/en_US/all.js#xfbml=1";
   fjs.parentNode.insertBefore(js, fjs);	
 }(document, 'script', 'facebook-jssdk'));
+
+}
 </script>
 
 <?php if($docName != "") { ?>
