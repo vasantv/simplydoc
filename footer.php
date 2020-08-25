@@ -10,9 +10,7 @@
 				<li><a href="http://www.medcenter.medly.in">blog</a></li>
 			</ul>
 		</center>
-		<center>
-			<small>Copyright &copy; 2012 Medly | All rights reserved</small><!-- CHANGE -->
-		</center>
+
     </div>
   
   <script type="text/javascript">
