@@ -1,6 +1,6 @@
 /* Google Analytics tracking code */
   var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', 'UA-31868112-1']);
+  _gaq.push(['_setAccount', 'UA-xxxxxx-1']);
   _gaq.push(['_trackPageview']);
 
   (function() {
