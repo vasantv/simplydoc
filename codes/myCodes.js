@@ -12,7 +12,7 @@
     geocoder = new google.maps.Geocoder();
 	latlng = new google.maps.LatLng(12.971599,77.594563);
     var myOptions = {
-      zoom: 15,
+      zoom: 13,
       center: latlng,
       mapTypeId: google.maps.MapTypeId.ROADMAP
     }
@@ -22,10 +22,8 @@
 	localLatLng = latlng;
 	localLocation = 1; 
 	currentPage = 1;
-	if (address == 1) { //special case for doctorDetails.php
-		return; 
-	}
-	else if(address!= "") { codeGivenAddress(address,1); }
+
+	if(address!= "") { codeGivenAddress(address,1); }
 	else{
 		displayResult(latlng,1);	
 		updateResultCount(latlng);
