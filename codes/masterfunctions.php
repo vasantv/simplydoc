@@ -245,7 +245,7 @@ function findCount($geoPoint, $tableName = "docDetails")
 	$totalQuery2 = "SELECT COUNT(doc_id) FROM $firstQuery WHERE Distance >= $boundingRadius1 AND Distance < $boundingRadius2";
 
 	$result = $con->query($totalQuery2);
-	error_log('counte query ='.$totalQuery2);
+	//error_log('counte query ='.$totalQuery2);
 	$row = mysqli_fetch_row($result);
 	$counters["second"] = $row[0];
 
@@ -276,7 +276,7 @@ function findCount($geoPoint, $tableName = "docDetails")
 	mysqli_close($con);
   
 	$execute_time = microtime() - $start;
-	error_log('time to execute query-counts = '.$execute_time); 
+	//error_log('time to execute query-counts = '.$execute_time); 
 
 	return $counters;
 }

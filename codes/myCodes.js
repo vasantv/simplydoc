@@ -69,7 +69,7 @@
 				    <span itemprop="distance" class="greyText"> ('+provDistance+' kms)</span><br/>';
 		if(provAddress != ''){		  
 				  	addString = addString + '<address itemprop="address" itemscope itemtype="http://data-vocabulary.org/Address">';
-					addString = addString + provAddress+'</address><br/>';
+					addString = addString + provAddress+'</address>';
 				}
 	    if(provSpec != '') {
 	    	addString = addString + "<i class='icon-leaf'></i> " +provSpec;
